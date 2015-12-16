@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>db test2 for mobile</title>
+	<link rel="stylesheet" href=""> 
+</head>
+<body>
+	
+	<p>web sql database some bugs in mobile devices</p>
+
+	<form action="">
+		<label for="">用户名：</label>
+		<input type="text" id="username">
+		<p>
+			<button type="button" id="submitBtn">提交</button>
+			<button type="button" id="resetBtn">重置</button>
+		</p>
+		
+	</form>
+	
+	<ul id="userlist">
+		
+	</ul>
+
+<script src="../resource/js/jquery-1.8.0.min.js"></script>
+<script>
+//创建数据库
+var db = openDatabase('testDB', '1.0', 'Test DB', 2*1024*1024);
+if (!db) {
+	console.log('failed to connect to database');
+} else{
+	console.log('connect ok');
+};
+
+//创建表  
+var createTable = function(tableName){
+	db.transaction(function(ctx){
+		//ctx.executeSql(sql语句,sql参数, 返回源,错误);
+		ctx.executeSql(
+			'CREATE TABLE IF NOT EXISTS '+tableName+' (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)',
+			[],
+			function(ctx, error){
+				console.log('create table failed : '+error.message+' with error code : '+error.code);
+			},
+			function(){
+				console.log('create table success');
+			}
+		);
+	});
+};
+
+
+//插入数据
+var insertData = function(name){
+	db.transaction(function(ctx){
+		ctx.executeSql(
+			'INSERT INTO users (name) values(?)',
+			[name],
+			function(ctx, error){
+				console.log('insert data failed : '+error.message+' with error code : '+error.code);
+			},
+			function(){
+				console.log('insert data success');
+			}
+		);
+	});
+};
+
+
+//查询数据
+var queryData = function(tableName, callback){
+	db.transaction(function (ctx) {      
+	   ctx.executeSql(
+	   	'SELECT * FROM '+tableName,
+	   	[],
+			function(ctx, error){
+				console.log('query data failed : '+error.message+' with error code : '+error.code);	
+			},
+	   	function(ctx, result){
+				console.log('query data success');
+				callback && callback(result);
+			}
+	   );     
+	});
+};
+
+
+//删除表
+var dropTable = function(tableName){
+	db.transaction(function (ctx) {      
+	   ctx.executeSql(
+	   	'DROP TABLE '+tableName,
+	   	[],
+			function(ctx, error){
+				console.log('drop table users failed : '+error.message+' with error code : '+error.code);
+			},
+	   	function(){
+				console.log('drop table users success');
+			}	
+	   );     
+	});
+};
+ 
+
+var userTable = 'users',
+	 submitBtn = document.getElementById('submitBtn'),
+	 usernameIpt = document.getElementById('username'),
+	 resetBtn = document.getElementById('resetBtn'),
+	 $userlist = $('#userlist');
+
+createTable(userTable);
+
+db.transaction(
+	function (ctx) { 
+		ctx.executeSql(
+			'INSERT INTO users (name) values(?)',
+			['zhouyuan'],
+	   	function(ctx, result){
+				console.log('success');
+
+			},
+			function(ctx, error){
+				console.log('failed : '+error.message+' with error code : '+error.code);
+			}	
+		);
+	}
+);
+
+submitBtn.onclick = function(){
+	if (!usernameIpt.value) {
+		alert('please enter username');
+		return false;
+	};
+	insertData(usernameIpt.value);
+	$userlist.append($('<li>'+usernameIpt.value+'</li>'));
+	queryData('users', function(res){
+		console.log(res);	
+		/*var rows = res.rows, 
+			 length = rows.length,
+			 i = 0;
+		for(i; i<length; i++){
+			var item = rows.item(i);
+			if(item.name === usernameIpt.value){
+				alert('username can not repeat');
+				return false;
+			}
+		}		
+
+		insertData(usernameIpt.value);
+		$userlist.append($('<li>'+usernameIpt.value+'</li>'));*/
+	});
+};
+
+queryData('users', function(res){
+	console.log(res);
+	/*
+	var rows = res.rows, 
+		 length = rows.length,
+		 i = 0;
+	for(i; i<length; i++){
+		var item = rows.item(i);
+		console.log(item);
+		$userlist.append($('<li>'+item.name+'</li>'));
+	}	
+	*/
+
+});
+
+	
+resetBtn.onclick = function(){
+	
+};
+
+</script>	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

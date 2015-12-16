@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>indexedDB test</title>
+	<link rel="stylesheet" href=""> 
+</head>
+<body>
+	
+	<p>indexedDB test</p>
+
+	<form action="">
+		<label for="">用户名：</label>
+		<input type="text" id="username">
+		<p>
+			<button type="button" id="submitBtn">提交</button>
+			<button type="button" id="resetBtn">重置</button>
+		</p>
+		
+	</form>
+	
+	<ul id="userlist">
+		
+	</ul>
+
+<script src="../resource/js/jquery-1.8.0.min.js"></script>
+<script>
+
+if (!window.indexedDB) {
+	throw 'indexedDB is not supported';
+};
+
+//创建数据库
+var dbInfo = {
+		name    : 'test',
+		version : 3,
+		db      : null
+	},
+	iDB = window.indexedDB;
+
+var openDB = function(name, version){
+	var version = version || 1;
+	var request = iDB.open(name, version);
+	
+	request.onerror = function(evt){
+		console.log('open error + '+evt.currentTarget.error.message);
+	};
+
+	request.onsuccess = function(evt){
+		dbInfo.db = evt.target.result;
+	};	
+
+	request.onupgradeneeded = function(evt){
+		var db = evt.target.result;
+		if (!db.objectStoreNames.contains('students')) {
+			db.createObjectStore('students', {keyPath : 'id'})
+		};
+		console.log('DB version changed to ' +version);
+	};
+
+	request.onclose = function(res){
+		console.log('close db : '+res);
+	};
+
+};
+
+
+var closeDB = function(db){
+	db.close();
+};
+
+var deleteDB = function(name){
+	iDB.deleteDatabase(name);
+};
+
+
+openDB(dbInfo.name, dbInfo.version);
+
+/*setTimeout(function(){
+	closeDB(dbInfo.db);
+	deleteDB(dbInfo.name);
+}, 1000);*/
+
+var students = [
+	{ 
+      id   : 1001, 
+      name : "Byron", 
+      age  : 24 
+   },
+   { 
+      id   : 1002, 
+      name : "Frank", 
+      age  : 30 
+   },
+   { 
+      id   : 1003, 
+      name : "Aaron", 
+      age  : 26 
+   }
+];
+
+
+var addData = function(db, storeName){
+	var transaction = db.transaction(storeName, 'readwrite');
+	var store = transaction.objectStore(storeName);
+	
+	for(var i=0; i<students.length; i++){
+		store.add(students[i]);
+	}
+};
+
+setTimeout(function(){
+	 addData(dbInfo.db, 'students');
+}, 1000);
+
+
+
+//插入数据
+
+
+
+//查询数据
+
+
+
+//删除表
+
+ 
+
+var userTable = 'users',
+	 submitBtn = document.getElementById('submitBtn'),
+	 usernameIpt = document.getElementById('username'),
+	 resetBtn = document.getElementById('resetBtn'),
+	 $userlist = $('#userlist');
+
+
+submitBtn.onclick = function(){
+	if (!usernameIpt.value) {
+		alert('please enter username');
+		return false;
+	};
+	
+};
+
+
+	
+resetBtn.onclick = function(){
+	
+};
+
+</script>	
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
